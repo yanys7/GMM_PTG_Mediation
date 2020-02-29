@@ -90,5 +90,5 @@ alpha_a.ini_file = initial values for 1-by-q alpha_a vector (exposure-mediator c
 
 Cov_file = the prior means (2-by-1) for the variances of the unthresholded beta_m and alpha_a
 
-The output file is 'results_11.txt', which contains the posterior samples of (beta_mj, alpha_aj, r1_j, r2_j) for each j-th mediator, stacked in order, r1_j indicates whether beta_mj is non-zero, r2_j indicates whether alpha_aj is non-zero. The following columns contains the posterior samples of beta_a, lambda_0, lambda_1, lambda_2, sigma_e, sigma_g, and the loglikelihood.
+The output file is 'results_11.txt', which contains the posterior samples of (beta_mj, alpha_aj, r1_j, r2_j) for each j-th mediator, stacked in order, r1_j indicates whether beta_mj is non-zero, r2_j indicates whether alpha_aj is non-zero. The following columns contain the posterior samples of beta_a, lambda_0, lambda_1, lambda_2, sigma_e, sigma_g, and the loglikelihood.
 
