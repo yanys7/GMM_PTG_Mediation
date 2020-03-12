@@ -212,6 +212,12 @@ class Variables
     this->l21 = l21;
     this->l22 = l22;
 
+    lambda0 = l01;
+    lambda1 = l11;
+    lambda2 = l21;
+
+    printf( "lambda0 %.3E lambda1 %.3E lambda2 %.3E \n", lambda0, lambda1, lambda2 ); fflush( stdout );
+
     /** Initialize my_samples here. */
     my_samples.resize( 499, 4 * q + 7, 0.0 );
 
@@ -378,8 +384,10 @@ class Variables
      }
 
      /** var_m = 1.0 / ( 1 / sigma_m + M2norm / sigma_e ) */
-     sigma_m1 = Var[ 0 ];
-     sigma_ma1 = Var[ 1 ];
+     if ( it == 0 ) {
+       sigma_m1 = Var[ 0 ] / km1;
+       sigma_ma1 = Var[ 1 ] / kma1;
+     }
 
      var_m1.resize( 1, q, 0.0 );
      var_ma1.resize( 1, q, 0.0 );
@@ -416,7 +424,7 @@ class Variables
      /** var_a[ 0 ] = sigma_e / ( sigma_e / sigma_a + A2norm[ 0 ] ); */
      var_a[ 0 ] = sigma_e / A2norm[ 0 ];
 
-     if (true) {
+     //do {
 
      for ( size_t j = 0; j < q; j ++ )
      {
@@ -444,8 +452,8 @@ class Variables
      { 
        thd_beta = std::min( lambda1, lambda0 * 1.0 / std::abs(alpha_a[ j ]) ); 
      }
-     else 
-     { 
+     else
+     {
        thd_beta = lambda1; 
        //thd_beta = std::min( lambda1, lambda0 * 1.0 / std::abs(alpha_a[ j ]) ); 
      }
@@ -567,7 +575,7 @@ class Variables
       //const3 /= sum_prop;
       //const4 /= sum_prop;
       //const5 /= sum_prop;
-      
+
       std::discrete_distribution<int> dist_r3 ( { const3, const4, const5 } );
       r3[ j ] = dist_r3 ( generator );
 
@@ -614,8 +622,34 @@ class Variables
 
      } /** end for each j < q */
 
+        //hmlp::Data<T> beta_m_tmp;
+        //hmlp::Data<T> alpha_a_tmp;
+        //hmlp::Data<T> prod_tmp;
 
-     /** update beta_a */
+        //prod_tmp.resize(1, q, 0.0); beta_m_tmp.resize(1, q, 0.0); alpha_a_tmp.resize(1, q, 0.0);
+        //for ( size_t j = 0; j < q; j++ ) {
+        //  prod_tmp[ j ] = std::abs( beta_m[ j ] * alpha_a[ j ] );
+        //  alpha_a_tmp[ j ] = std::abs( alpha_a[ j ] );
+        //  beta_m_tmp[ j ] = std::abs( beta_m[ j ] );
+        // }
+
+       //std::sort( beta_m_tmp.begin(), beta_m_tmp.end() );
+       //std::sort( alpha_a_tmp.begin(), alpha_a_tmp.end() );
+       //std::sort( prod_tmp.begin(), prod_tmp.end() );
+
+       //lmin[ 0 ] = prod_tmp[ (int)(l01 * q) ];
+       //lmin[ 1 ] = beta_m_tmp[ (int)(l11 * q) ];
+       //lmin[ 2 ] = alpha_a_tmp[ (int)(l21 * q) ];
+
+       //lmax[ 0 ] = prod_tmp[ (int)(l02 * q) ];
+       //lmax[ 1 ] = beta_m_tmp[ (int)(l12 * q) ];
+       //lmax[ 2 ] = alpha_a_tmp[ (int)(l22 * q) ];
+
+  //} /** end do */
+  
+  //while ( lambda0 < lmin[ 0 ] || lambda0 > lmax[ 0 ] || lambda1 < lmin[ 1 ] || lambda1 > lmax[ 1 ] || lambda2 < lmin[ 2 ] || lambda2 > lmax[ 2 ] );
+
+    /** update beta_a */
      T mu_a = 0.0;
      old = beta_a[ 0 ];
      for ( size_t i = 0; i < n; i ++ )
@@ -629,7 +663,6 @@ class Variables
        res1[ i ] = res1[ i ] + ( old - beta_a[ 0 ] ) * A[ i ];
      }
 
-     }
 
      /** update sigma_m, sigma_a and sigma_ma */
      std::gamma_distribution<T>  dist_a( 0.5 +  ha, 1.0 / ( beta_a[ 0 ] * beta_a[ 0 ] / 2.0 + la ) );
@@ -654,17 +687,17 @@ class Variables
 
       //std::gamma_distribution<T>  dist_m1( const6 +  km1, 1.0 / ( const7 +  lm1 ) );
       //std::gamma_distribution<T> dist_ma1( const8 + kma1, 1.0 / ( const9 + lma1 ) );
- 
-      std::gamma_distribution<T>  dist_m1( const6 +  km1, 1.0 / ( const7 +  Var[ 0 ] ) ); 
+
+      std::gamma_distribution<T>  dist_m1( const6 +  km1, 1.0 / ( const7 +  Var[ 0 ] ) );
       std::gamma_distribution<T> dist_ma1( const8 + kma1, 1.0 / ( const9 + Var[ 1 ] ) );
       sigma_m1  = 1.0 / dist_m1 ( generator );
       sigma_ma1 = 1.0 / dist_ma1 ( generator );
 
-    //if ( it % 1000 == 0 )
-    // {
-    //   printf( "Iter %4lu sigma_m1 %.3E sigma_ma1 %.3E const6 %.3E const7 %.3E const8 %.3E const9 %.3E \n",
-    //            it,  sigma_m1, sigma_ma1, const6, const7, const8, const9 ); fflush( stdout );
-    // }
+      if ( it % 10000 == 0 )
+      {
+         printf( "Iter %4lu sigma_m1 %.3E sigma_ma1 %.3E const6 %.3E const7 %.3E const8 %.3E const9 %.3E \n",
+                it,  sigma_m1, sigma_ma1, const6, const7, const8, const9 ); fflush( stdout );
+       }
 
 
       /** update lambda */
@@ -693,41 +726,28 @@ class Variables
                 it, lambda0, lambda1, lambda2 ); fflush( stdout );
       }
 
-      if (true) {
-        hmlp::Data<T> beta_m_tmp;
-        hmlp::Data<T> alpha_a_tmp;
-        hmlp::Data<T> prod_tmp;
-        T qn1 = 0.80;
-        T qn2 = 0.90;
-        prod_tmp.resize(1, q, 0.0); beta_m_tmp.resize(1, q, 0.0); alpha_a_tmp.resize(1, q, 0.0);
-        for ( size_t j = 0; j < q; j++ ) {
-          prod_tmp[ j ] = std::abs( beta_m[ j ] * alpha_a[ j ] );
-          alpha_a_tmp[ j ] = std::abs( alpha_a[ j ] );
-          beta_m_tmp[ j ] = std::abs( beta_m[ j ] );
-         }
-
-       std::sort( beta_m_tmp.begin(), beta_m_tmp.end() );
-       std::sort( alpha_a_tmp.begin(), alpha_a_tmp.end() );
-       std::sort( prod_tmp.begin(), prod_tmp.end() );
-
-       lmin[ 0 ] = prod_tmp[ (int)(l01 * q) ];
-       //lmin[ 0 ] = 0.0;
-       lmin[ 1 ] = beta_m_tmp[ (int)(l11 * q) ];
-       lmin[ 2 ] = alpha_a_tmp[ (int)(l21 * q) ];
-
-       lmax[ 0 ] = prod_tmp[ (int)(l02 * q) ];
-       //lmax[ 0 ] = 0.10;
-       lmax[ 1 ] = beta_m_tmp[ (int)(l12 * q) ];
-       lmax[ 2 ] = alpha_a_tmp[ (int)(l22 * q) ];
+      if (false) {
 
 	      hmlp::Data<T> lambda_tmp; lambda_tmp.resize(1, 3, 0.0);
 	      for ( int i = 0; i < 3; i++ ) {
 	        //std::uniform_real_distribution<double> dist1( lmin[ i ], lmax[ i ] );
       		//lambda_tmp[ i ] = dist1( generator );
 		     }
-	      lambda_tmp[ 0 ] = truncated_normal_ab_sample ( lambda0, 1.0, lmin[ 0 ], lmax[ 0 ], sed );
-	      //lambda_tmp[ 1 ] = truncated_normal_ab_sample ( lambda1, 1.0, lmin[ 1 ], lmax[ 1 ], sed );
-	      lambda_tmp[ 1 ] = truncated_normal_ab_sample ( lambda1, 1.0, lmin[ 1 ], lmax[ 1 ], sed );
+
+       //lmin[ 0 ] = prod_tmp[ (int)(l01 * q) ];
+       //lmin[ 1 ] = beta_m_tmp[ (int)(l11 * q) ];
+       //lmin[ 2 ] = alpha_a_tmp[ (int)(l21 * q) ];
+
+       //lmax[ 0 ] = prod_tmp[ (int)(l02 * q) ];
+       //lmax[ 1 ] = beta_m_tmp[ (int)(l12 * q) ];
+       //lmax[ 2 ] = alpha_a_tmp[ (int)(l22 * q) ];
+
+	lmin[ 0 ] =
+	lmin[ 1 ] =
+	lmin[ 2 ] =
+
+	lambda_tmp[ 0 ] = truncated_normal_ab_sample ( lambda0, 1.0, lmin[ 0 ], lmax[ 0 ], sed );
+	lambda_tmp[ 1 ] = truncated_normal_ab_sample ( lambda1, 1.0, lmin[ 1 ], lmax[ 1 ], sed );
         lambda_tmp[ 2 ] = truncated_normal_ab_sample ( lambda2, 1.0, lmin[ 2 ], lmax[ 2 ], sed );
 
         T probab = 0.0;
@@ -735,7 +755,7 @@ class Variables
         if (false) {
 
         hmlp::Data<T> my_unif(1, 1);
-       
+
         if (false) {
         probab = PostDistribution( lambda_tmp[ 0 ], lambda1, lambda2 )
                - PostDistribution( lambda0, lambda1, lambda2 )
@@ -753,8 +773,8 @@ class Variables
           {
            printf( "Iter %4lu updated_lambda0 %.3E \n", it, lambda0 ); fflush( stdout );
           }
-      }
         }
+       }
 
         probab = PostDistribution( lambda0, lambda_tmp[ 1 ], lambda2 )
                - PostDistribution( lambda0, lambda1, lambda2 )
@@ -922,11 +942,11 @@ class Variables
 
     T sigma_e;
 
-    T lambda0 = 0.03;
+    T lambda0;
 
-    T lambda1 = 0.1;
+    T lambda1;
 
-    T lambda2 = 0.06;
+    T lambda2;
 
     hmlp::Data<T> lmin;
 
