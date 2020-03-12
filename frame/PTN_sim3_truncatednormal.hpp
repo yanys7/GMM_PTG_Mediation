@@ -928,11 +928,11 @@ class Variables
 
     T lg = 1.0;
 
-    T km1 = 2.0;
+    T km1 = 100.0;
 
     T lm1 = 0.09;
 
-    T kma1 = 2.0;
+    T kma1 = 100.0;
 
     T lma1 = 0.09;
 
