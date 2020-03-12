@@ -952,7 +952,6 @@ class Variables
 
     hmlp::Data<T> lmax;
 
-
     hmlp::Data<T> r1;
 
     hmlp::Data<T> r3;
