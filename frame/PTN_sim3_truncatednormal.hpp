@@ -248,14 +248,10 @@ class Variables
     A2norm.resize( 1, 1, 0.0 );
     for ( size_t i = 0; i < n; i ++ ) A2norm[ 0 ] += A[ i ] * A[ i ];
 
-    //printf( "A2norm %.3E \n", A2norm[ 0 ] ); fflush( stdout );
-
     M2norm.resize( 1, q, 0.0 );
     for ( size_t j = 0; j < q; j ++ )
       for ( size_t i = 0; i < n; i ++ )
         M2norm[ j ] += M[ j * n + i ] * M[ j * n + i ];
-
-    //printf( "M2norm %.3E \n", M2norm[ 10 ] ); fflush( stdout );
 
     C1_2norm.resize( 1, w1, 0.0);
     for ( size_t j = 0; j < w1; j ++ )
@@ -266,11 +262,6 @@ class Variables
     for ( size_t j = 0; j < w2; j ++ )
       for ( size_t i = 0; i < n; i ++ )
         C2_2norm[ j ] += C2[ j*n + i ] * C2[ j*n + i ];
-
-    lmin.resize(1, 3, 0.0);
-    lmax.resize(1, 3, 0.0);
-    lmin[ 0 ] = 0.02;  lmin[ 1 ] = 0.09; lmin[ 2 ] = 0.05;
-    lmax[ 0 ] = 0.05; lmax[ 1 ] = 0.14; lmax[ 2 ] = 0.14;
 
   };
 
@@ -320,6 +311,11 @@ class Variables
       return  ( 1 / ( sigma * std::sqrt(2*M_PI) ) ) * std::exp( -0.5 * std::pow( (value-mu)/sigma, 2.0 ) );
    }
 
+   T log_normal_pdf(T mu, T sigma, T value)
+   {
+      return  ( - std::log( sigma * std::sqrt(2*M_PI) ) - 0.5 * std::pow( (value-mu)/sigma, 2.0 ) );
+   }
+
    T PostDistribution( T lambda0, T lambda1, T lambda2 )
    {
      T logc1 = 0.0;
@@ -339,17 +335,16 @@ class Variables
 	    //logc2 += std::log ( normal_pdf ( 0.0, std::sqrt( sigma_ma1 ), alpha_a[ j ] ) );
      }
 
-     //printf( "logc1 %.3E logc2 %.3E \n", logc1, logc2 ); fflush( stdout );
      for ( size_t i = 0; i < n; i++ ) {
 	      T meanc1 = beta_a[ 0 ] * A[ i ];
 	      for ( size_t j = 0; j < q; j++ ) {
 	        meanc1 += M(i, j) * beta_m_tmp[ j ];
-	        logc2 += std::log ( normal_pdf ( alpha_a_tmp[ j ] * A[ i ], std::sqrt( sigma_g ), M(i, j) ) );
+	        logc2 += log_normal_pdf ( alpha_a_tmp[ j ] * A[ i ], std::sqrt( sigma_g ), M(i, j) );
           if ( j % 500 == 0 && i % 500 == 0 && isinf(normal_pdf ( alpha_a_tmp[ j ] * A[ i ], std::sqrt( sigma_g ), M(i, j) ) ) ) {
           printf( "logc2_pdf %.3E \n", normal_pdf ( alpha_a_tmp[ j ] * A[ i ], std::sqrt( sigma_g ), M(i, j) ) ); fflush( stdout );
           }
 	      }
-	      logc1 += std::log ( normal_pdf ( meanc1, std::sqrt( sigma_e ), Y[ i ] ) );
+	      logc1 += log_normal_pdf ( meanc1, std::sqrt( sigma_e ), Y[ i ] );
         if ( i % 500 == 0 && isinf(normal_pdf ( meanc1, std::sqrt( sigma_e ), Y[ i ] )) ) {
         printf( "logc1_pdf %.3E \n", normal_pdf ( meanc1, std::sqrt( sigma_e ), Y[ i ] ) ); fflush( stdout );
         }
@@ -486,18 +481,17 @@ class Variables
       std::discrete_distribution<int> dist_r1 ( { const0, const1, const2 } );
       r1[ j ] = dist_r1 ( generator );
 
-//    if ( it % 100 == 0 && j % 100 == 0 )
-//    {
-//       printf( "Iter %4lu const0 %.2E, const1 %.2E, const2 %.2E \n",
-//                it, const0, const1, const2 ); fflush( stdout );
-//     }
+      //if ( it % 100 == 0 && j % 100 == 0 )
+      //{
+      //   printf( "Iter %4lu const0 %.2E, const1 %.2E, const2 %.2E \n",
+      //            it, const0, const1, const2 ); fflush( stdout );
+      // }
 
-
-    // if ( it % 100 == 0 && j % 100 == 0 )
-    // {
-    //  printf( "Iter %4lu c1 %.3E c2 %.3E c3 %.3E thd_beta %.3E mu_mj1 %.3E var_m1 %.3E sigma_m1, %.3E r1 %.2E \n",
-    //            it, c1, c2, c3, thd_beta,  mu_mj1, std::sqrt( var_m1[ j ] ), std::sqrt( sigma_m1 ), r1[ j ] ); fflush( stdout );
-    // }
+      // if ( it % 100 == 0 && j % 100 == 0 )
+      // {
+      //  printf( "Iter %4lu c1 %.3E c2 %.3E c3 %.3E thd_beta %.3E mu_mj1 %.3E var_m1 %.3E sigma_m1, %.3E r1 %.2E \n",
+      //            it, c1, c2, c3, thd_beta,  mu_mj1, std::sqrt( var_m1[ j ] ), std::sqrt( sigma_m1 ), r1[ j ] ); fflush( stdout );
+      // }
 
       if ( r1[ j ] == 1 ) {
           beta_m[ j ] = truncated_normal_a_sample( mu_mj1, std::sqrt( var_m1[ j ] ), thd_beta, sed );
@@ -515,11 +509,11 @@ class Variables
         beta_m_thd = 0.0;
       }
 
-     //if ( it % 100 == 0 && j % 100 == 0 )
-     //{
-     //  printf( "Iter %4lu beta_m %.3E \n",
-     //           it, beta_m[ j ] ); fflush( stdout );
-     //}
+      //if ( it % 100 == 0 && j % 100 == 0 )
+      //{
+      //  printf( "Iter %4lu beta_m %.3E \n",
+      //           it, beta_m[ j ] ); fflush( stdout );
+      //}
 
        for ( size_t i = 0; i < n; i ++ )
        {
@@ -527,8 +521,6 @@ class Variables
        }
 
        thd_beta_m[ j ] = beta_m_thd;
-
-      //Residual( it );
 
        /** alpha_a[ j ] = randn( mu_alpha_aj, var_alpha_a ) */
        //old = alpha_a[ j ];
@@ -610,8 +602,6 @@ class Variables
      //  printf( "Iter %4lu alpha_a %.3E \n",
      //           it, alpha_a[ j ] ); fflush( stdout );
      //}
-
-      //Residual( it );
 
       for ( size_t i = 0; i < n; i ++ )
       {
@@ -742,12 +732,12 @@ class Variables
        //lmax[ 1 ] = beta_m_tmp[ (int)(l12 * q) ];
        //lmax[ 2 ] = alpha_a_tmp[ (int)(l22 * q) ];
 
-	lmin[ 0 ] =
-	lmin[ 1 ] =
-	lmin[ 2 ] =
+    	  lmin[ 0 ] =
+	      lmin[ 1 ] =
+	      lmin[ 2 ] =
 
-	lambda_tmp[ 0 ] = truncated_normal_ab_sample ( lambda0, 1.0, lmin[ 0 ], lmax[ 0 ], sed );
-	lambda_tmp[ 1 ] = truncated_normal_ab_sample ( lambda1, 1.0, lmin[ 1 ], lmax[ 1 ], sed );
+	      lambda_tmp[ 0 ] = truncated_normal_ab_sample ( lambda0, 1.0, lmin[ 0 ], lmax[ 0 ], sed );
+	      lambda_tmp[ 1 ] = truncated_normal_ab_sample ( lambda1, 1.0, lmin[ 1 ], lmax[ 1 ], sed );
         lambda_tmp[ 2 ] = truncated_normal_ab_sample ( lambda2, 1.0, lmin[ 2 ], lmax[ 2 ], sed );
 
         T probab = 0.0;
