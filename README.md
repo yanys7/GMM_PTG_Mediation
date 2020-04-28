@@ -57,7 +57,7 @@ Another output file is 'results_gmm_11.txt', which contains the posterior sample
 
 To run the PTN for high-dimensional mediation analysis:
 
-    ./bin/mcmc_PTN.x n c1 c2 q burnIn iter 1 1 l01 l02 l11 l12 l21 l22 Y_file M_file A_file C1_file C2_file beta_m.ini_file alpha_a.ini_file Cov_file
+    ./bin/mcmc_PTN_rd.x n c1 c2 q burnIn iter 1 1 l01 l11 l21 Y_file M_file A_file C1_file C2_file beta_m.ini_file alpha_a.ini_file Cov_file
 
 where
 n = sample size
@@ -72,7 +72,7 @@ burnIn = iterations for burnIn
 
 iter = total number of iterations
 
-l01,l02,l11,l12,l21,l22 = the preset quantiles for the three threshold parameters, lambda_0, lambda_1 and lambda_2
+l01 = lambda_0; l11 = lambda_1; l21 = lambda_2
 
 A_file = exposure file containing n-by-1 exposure vector
 
@@ -84,11 +84,11 @@ C1_file = covariate file containing n-by-c1 covariate matrix for the outcome mod
 
 C2_file = covariate file containing n-by-c2 covariate matrix for the mediator model, with the first column being 1 for the intercept
 
-beta_m.ini_file = initial values for 1-by-q beta_m vector (mediator-outcome coefficients) in the outcome model, 
+beta_m.ini_file = initial values for 1-by-q beta_m vector (mediator-outcome coefficients) in the outcome model
 
 alpha_a.ini_file = initial values for 1-by-q alpha_a vector (exposure-mediator coefficients) in the mediator model
 
-Cov_file = the prior means (2-by-1) for the variances of the unthresholded beta_m and alpha_a
+Cov_file = the rate parameters (2-by-1) in the Inverse-Gamma priors for the variances of the unthresholded beta_m and alpha_a. Both of the shape parameters are set to be 1.1
 
-The output file is 'results_11.txt', which contains the posterior samples of (beta_mj, alpha_aj, r1_j, r2_j) for each j-th mediator, stacked in order, r1_j indicates whether beta_mj is non-zero, r2_j indicates whether alpha_aj is non-zero. The following columns contain the posterior samples of beta_a, lambda_0, lambda_1, lambda_2, sigma_e, sigma_g, and the loglikelihood.
+The output file is 'results_11.txt', which contains the posterior samples of (beta_mj, alpha_aj, r1_j, r2_j) for each j-th mediator, stacked in order, r1_j indicates whether beta_mj is non-zero, r2_j indicates whether alpha_aj is non-zero. The following columns contain the posterior samples of beta_a, sigma_e, sigma_g, and the loglikelihood.
 
