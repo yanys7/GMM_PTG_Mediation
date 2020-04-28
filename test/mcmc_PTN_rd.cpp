@@ -41,7 +41,7 @@ int main( int argc, char *argv[] )
   T l21 = 0.85;
   T l22 = 0.95;
 
-	if ( argc == 24 )
+	if ( argc == 21 )
 	{
 		/** read parameters */
 		sscanf( argv[ 1 ], "%lu", &n );
@@ -55,11 +55,8 @@ int main( int argc, char *argv[] )
     sscanf( argv[ 9 ], "%lu", &permute );
 
     sscanf( argv[ 10 ], "%lf", &l01 );
-    sscanf( argv[ 11 ], "%lf", &l02 );
-    sscanf( argv[ 12 ], "%lf", &l11 );
-    sscanf( argv[ 13 ], "%lf", &l12 );
-    sscanf( argv[ 14 ], "%lf", &l21 );
-    sscanf( argv[ 15 ], "%lf", &l22 );
+    sscanf( argv[ 11 ], "%lf", &l11 );
+    sscanf( argv[ 12 ], "%lf", &l21 );
 	}
 	else
 	{
@@ -67,25 +64,15 @@ int main( int argc, char *argv[] )
   }
 
 
-  std::string Y_filename(       argv[ 16 ] );
-  std::string M_filename(       argv[ 17 ] );
-  std::string A_filename(       argv[ 18 ] );
-  std::string C1_filename(      argv[ 19 ]  );
-  std::string C2_filename(      argv[ 20 ] ); 
-  std::string beta_m_filename(  argv[ 21 ]  );
-  std::string alpha_a_filename( argv[ 22 ] );
-  std::string Psi_filename(     argv[ 23 ] );
+  std::string Y_filename(       argv[ 13 ] );
+  std::string M_filename(       argv[ 14 ] );
+  std::string A_filename(       argv[ 15 ] );
+  std::string C1_filename(      argv[ 16 ]  );
+  std::string C2_filename(      argv[ 17 ] ); 
+  std::string beta_m_filename(  argv[ 18 ]  );
+  std::string alpha_a_filename( argv[ 19 ] );
+  std::string Psi_filename(     argv[ 20 ] );
 
-  //std::string Y_filename( "bmi3.txt" );
-  //std::string M_filename( "sig_shore.txt" );
-  //std::string A_filename( "race_st.txt" );
-  //std::string C1_filename( "age.sex.txt" );
-  //std::string C2_filename( "age.sex.10pc.txt" );
-
-  //std::string beta_m_filename( "beta_m2.txt" );
-  //std::string alpha_a_filename( "alpha_a2.txt" );
-  //std::string pi_m_filename( "pi_m2.txt" );
-  //std::string pi_a_filename( "pi_a2.txt" );
 
   hmlp::Data<T> Y( n, 1 );
   hmlp::Data<T> M( n, q ); 
@@ -107,10 +94,8 @@ int main( int argc, char *argv[] )
   alpha_a.readmatrix( 1, q, alpha_a_filename );
   Var.readmatrix( 1, d, Psi_filename );
 
-  //hmlp::Data<T> X( 2, 3 ); X.randn();
-  //X.WriteFile( "X.m" );
 
-  mcmc::mcmc<T>( Y, A, M, C1, C2, beta_m, alpha_a, Var, n, w1, w2, q, q1, q2, l01, l02, l11, l12, l21, l22, burnIn, niter );
+  mcmc::mcmc<T>( Y, A, M, C1, C2, beta_m, alpha_a, Var, n, w1, w2, q, q1, q2, l01, l11, l21, burnIn, niter );
 
   return 0;
 };
