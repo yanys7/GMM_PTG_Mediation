@@ -453,12 +453,6 @@ class Variables
       std::discrete_distribution<int> dist_r1 ( { const0, const1, const2 } );
       r1[ j ] = dist_r1 ( generator );
 
-      // if ( it % 100 == 0 && j % 100 == 0 )
-      // {
-      //  printf( "Iter %4lu c1 %.3E c2 %.3E c3 %.3E thd_beta %.3E mu_mj1 %.3E var_m1 %.3E sigma_m1, %.3E r1 %.2E \n",
-      //            it, c1, c2, c3, thd_beta,  mu_mj1, std::sqrt( var_m1[ j ] ), std::sqrt( sigma_m1 ), r1[ j ] ); fflush( stdout );
-      // }
-
       if ( r1[ j ] == 1 ) {
           beta_m[ j ] = truncated_normal_a_sample( mu_mj1, std::sqrt( var_m1[ j ] ), thd_beta, sed );
  	        if ( isinf(beta_m[ j ]) ) { beta_m[ j ] = thd_beta; }
