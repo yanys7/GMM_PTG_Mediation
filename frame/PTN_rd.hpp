@@ -573,9 +573,8 @@ class Variables
         for ( size_t i = 0; i < n; i ++ )
         {
           mu_cj += C1( i, j ) * ( res1[ i ] + C1( i, j ) * beta_c[ j ]);
-          mu_cj = mu_cj / C1_2norm[ j ];
 	}
-	     
+         mu_cj = mu_cj / C1_2norm[ j ];    
          std::normal_distribution<T> dist_beta_c( mu_cj, std::sqrt( sigma_e / C1_2norm[ j ] ) );
          beta_c[ j ]  = dist_beta_c( generator );
          for ( size_t i = 0; i < n; i ++ )
